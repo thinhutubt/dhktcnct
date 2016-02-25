@@ -1,4 +1,4 @@
-# DH-KT-CN-CT: Sinh viên Trường Đại học Kỹ thuật - Công nghệ Cần Thơ
+# dhktcnct
 
 Thực hiện: Thi Minh Nhựt
 
