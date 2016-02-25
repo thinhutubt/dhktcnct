@@ -1,0 +1,285 @@
+\chapter{Tính toán các số liệu thực tế}
+\hspace{.6cm}Thực hiện quá trình tính toán cung cấp điện cho công trình \textbf{``Dãy phòng học một trệt sáu lầu''} của \emph{Trường Đại học Kỹ thuật -- Công nghệ Cần Thơ.}
+\section{Xác định phụ tải tính toán}
+%Xac dinh phu tai chieu sang dua vao dien tich
+\begin{sagesilent}
+#Tầng trệt: 3 phòng học; 1 phòng y tế; 1 nhà vệ sinh nữ; 1 nhà vệ sinh nam; dãy hành lang;
+# 2 cầu thang; khu vực thang máy - chọn 1 đèn
+
+Tang_tret = [12*8, round(6.7*3,0), round(2.3*4.3,0), round(3.6*6.5,0), round(48* 2.6,0)] #Diện tích mỗi phòng (theo thứ tự trên)
+
+SL_tret = [3,1,2,1,1] #Số lượng phòng  của từng loại trên
+
+CT_tret = 2 #Số lượng cầu thang
+
+TM_tret = 1
+
+#Các giá trị công suất tính toán chiếu sáng:
+
+Pcs = [20, 15,10] #Phòng thí nghiệm - phòng học - hành lang, W/m2
+P_quat = [75,4] # Công suât - số lượng
+#Một số thiết bị phục vụ giảng dạy:
+Tivi = [200,1]
+laptop = [65,10]
+P_dp = 1000
+den_cthang = 40
+den_thangmay = 40
+
+#Hệ số nhu cầu:
+k_nc = round(0.8,1)
+
+#Phòng học
+P_chieusang = Tang_tret[0]*Pcs[0]
+P_lammat = P_quat[0]*P_quat[1]
+P_tb = Tivi[0]*Tivi[1] + laptop[0]*laptop[1] + P_dp
+P_1ptret = P_chieusang + P_lammat + P_tb
+P_3ptret = SL_tret[0]*P_1ptret
+
+#Phòng y tế:
+P_quatyte = [75,1]
+P_dpyte = 2000
+P_csyte = Pcs[0]*Tang_tret[1]
+P_lammatyte = P_quatyte[0]*P_quatyte[1]
+P_yte = SL_tret[1]*(P_dpyte + P_csyte + P_lammatyte)
+
+#Phòng vệ sinh:
+#Nhà vệ sinh nữ:
+P_csvesinh = Pcs[1]*Tang_tret[2]
+P_vs1 = SL_tret[2]*P_csvesinh
+
+#Nhà vệ sinh nam:
+P_csvesinh2 = Pcs[1]*Tang_tret[3]
+P_vs2 = SL_tret[3]*P_csvesinh2
+
+P_vs = P_vs1 + P_vs2 #Công suất tính toán cho nhà vệ sinh
+
+#Dãy hành lang:
+P_hlang = Pcs[2]*Tang_tret[4]
+
+#Cầu thang:
+P_cthang = den_cthang*CT_tret
+
+#Thang máy:
+P_thangmay = den_thangmay*TM_tret
+
+#Công suất tính toán tầng trệt:
+P_t0 = P_3ptret + P_yte + P_vs + P_hlang + P_cthang + P_thangmay
+
+P_tt0 = round(k_nc*P_t0,0) #Công suất tính toán có hệ số nhu cầu
+P_tt0k = round(P_tt0/1000,3)
+
+#Phụ tải tầng 1:
+Tang_1 = round(1.7*43,0) #Diện tích của hành lang ngoài cửa sổ
+P_dp1 = 1000
+delta_P = P_dpyte - P_dp1
+#Phu tai moi
+P_yte1 = P_yte - delta_P
+P_hls = Tang_1*Pcs[2]
+
+#Công suất tính toán tầng trệt:
+P_t1 = P_3ptret + P_yte1 + P_vs + P_hlang + P_cthang + P_thangmay + P_hls
+
+P_tt1 = round(k_nc*P_t1,0) #Công suất tính toán có hệ số nhu cầu
+P_tt1k = round(P_tt1/1000,3)
+
+#Phu tải cho 5 tầng
+P_tt5tk = round(5*P_tt1k,3)
+
+#Phụ tải tầng 6:
+Tang_6 = [8*4, 8*32] #Phòng chuyên đề và giảng đường
+P_quatcd=[75,2]
+P_quatgd = [75,11]
+P_dpcd = 1000
+P_dpgd = 2000
+delta_P_gd = P_dpgd - P_dp
+
+P_cscd6 = Pcs[0]*Tang_6[0]
+P_csgd6 = Pcs[0]*Tang_6[1]
+P_lmcd6 = P_quatcd[0]*P_quatcd[1]
+P_lmgd6 = P_quatgd[0]*P_quatgd[1]
+P_tbgd6 = P_tb + delta_P_gd
+
+P_tt_cd = P_cscd6 + P_lmcd6 + P_dpcd
+P_tt_gd = P_csgd6 + P_lmgd6 + P_tbgd6
+
+#Công suất tính toán tầng 6:
+P_t6 = P_tt_cd + P_tt_gd + P_vs + P_hlang + P_cthang + P_thangmay + P_hls
+
+P_tt6 = round(k_nc*P_t6,0) #Công suất tính toán có hệ số nhu cầu
+P_tt6k = round(P_tt6/1000,3)
+
+#Hệ thống thang máy:
+So_tang = 6 #Số tầng di chuyển
+KL_DT = 1440 #Khối lượng đối trọng, kg.
+P_httm = 4 #Công suất hệ thống thang máy, kW
+
+#Tính cho toàn công trình:
+Ptct=P_tt0k + P_tt5tk + P_tt6k + 0.04 + P_httm
+Pttct = round(k_nc*Ptct,3)
+
+P_dptl = 20 #KW, dự phòng tương lai
+P_TT = Pttct + P_dptl
+
+#Hệ số công suất:
+PF = round(0.85,2) #cos = 0.85
+tan_phi = round(sqrt(1/PF^2-1),2)
+Q_TT = round(P_TT*tan_phi,2)
+S_TT = round(P_TT/PF,2)
+\end{sagesilent}
+
+\begin{enumerate}[a.]
+\item \textbf{Tầng trệt:} gồm có $\sage{SL_tret[0]}$ phòng học; $\sage{SL_tret[1]}$ phòng y tế; nhà vệ sinh; $\sage{SL_tret[4]}$ hành lang dài; $\sage{CT_tret}$ khu vực cầu thang; $\sage{TM_tret}$ khu vực thang máy.
+\begin{itemize}
+\item \textit{Phòng học}:
+\begin{itemize}
+\item Số lượng phòng: $n = \sage{SL_tret[0]}$ phòng.
+\item Diện tích mỗi phòng: $S = \sage{Tang_tret[0]}m^2$.\vspace{.3cm}\\
+Xác định phụ tải tính toán cho một phòng học:
+\begin{itemize}
+\item \textit{Chiếu sáng}: với phòng học $P_0=15-20W/m^2$, chọn: $P_0=\sage{Pcs[0]}W/m^2$, suy ra công suất chiếu sáng: $P_{cs}=P_0.S= \sage{Pcs[0]}.\sage{Tang_tret[0]} =\sage{P_chieusang}W$
+\item \textit{Làm mát}: sử dụng $\sage{P_quat[1]}$ quạt, loại có công suất $P=\sage{P_quat[0]}W$, suy ra công suất làm mát: $P_{lm}=\sage{P_quat[1]}.\sage{P_quat[0]}=\sage{P_lammat}W$
+\item \textit{Một số thiết bị phục vụ giảng dạy}: tivi ($P_1=\sage{Tivi[0]}W$, số lượng $n_1 = \sage{Tivi[1]}$); laptop (sử dụng sạc: $P_2 = \sage{laptop[0]}W$, số lượng $n_2 = \sage{laptop[1]}$); công sức dự phòng ($P_3=\sage{P_dp}W$). Tổng công suất các thiết bị phục vụ giảng dạy: $$P_{tb}=n_1P_1 + n_2P_2 + P_3 = \sage{Tivi[1]}.\sage{Tivi[0]} + \sage{laptop[1]}.\sage{laptop[0]}+\sage{P_dp}=\sage{P_tb}W$$
+\item Tổng công suất tính toán cho một phòng học:$$P_{1p} = P_{cs} + P_{lm} + P_{tb} = \sage{P_chieusang} + \sage{P_lammat} + \sage{P_tb} = \sage{P_1ptret}W$$
+\end{itemize}
+\item Tổng công suất tính toán cho $\sage{SL_tret[0]}$ phòng học là: $$P_{3p}= n.P_{1p} = \sage{SL_tret[0]}.\sage{P_1ptret} = \sage{P_3ptret}W$$
+\end{itemize}
+\item \textit{Phòng y tế:}
+\begin{itemize}
+\item Số lượng phòng: $n=\sage{SL_tret[1]}$ phòng.
+\item Diện tích phòng: $S = \sage{Tang_tret[1]}m^2$.
+\item \textit{Chiếu sáng}: với $P_0 = 15 - 20W/m^2$, chọn $P_0 = \sage{Pcs[0]}W/m^2$, suy ra công suất chiếu sáng: $P_{cs}=P_0.S = \sage{Pcs[0]}.\sage{Tang_tret[1]}=\sage{P_csyte}W$
+\item \textit{Làm mát}: sử dụng $\sage{P_quatyte[1]}$ quạt, loại có công suất $P = \sage{P_quatyte[0]}W$, suy ra công suất làm mát: $P_{lm} = \sage{P_quatyte[1]}.\sage{P_quatyte[0]}=\sage{P_lammatyte}W$
+\item \textit{Công suất dự phòng} (máy nước nóng, máy lọc nước,\ldots~): $P_{dp}=\sage{P_dpyte}W$
+\item Tổng công suất tính toán cho phòng y tế:$$P_{py}=n.\left({P_{cs} + P_{lm} + P_{dp}}\right) = \sage{SL_tret[1]}.\left({\sage{P_csyte}+\sage{P_lammatyte} + \sage{P_dpyte}}\right)=\sage{P_yte}W$$
+\end{itemize}
+\item \textit{Nhà vệ sinh:} nhà vệ sinh nam và nhà vệ sinh nữ.
+\begin{itemize}
+\item \textit{Nhà vệ sinh nữ:}
+\begin{itemize}
+\item Số lượng phòng: $n = \sage{SL_tret[2]}$ phòng.
+\item Diện tích: $S = \sage{Tang_tret[2]}m^2$.
+\item Công suất chiếu sáng cho một phòng vệ sinh: với $P_0 = 15 - 20W/m^2$, chọn $P_0 = \sage{Pcs[1]}W/m^2$, suy ra công suất chiếu sáng: $P_{cs1}=P_0.S = \sage{Pcs[1]}.\sage{Tang_tret[2]}=\sage{P_csvesinh}W$
+\item Công suất chiếu sáng cho nhà vệ sinh nữ: $P_{vs1}=nP_{cs1}=\sage{SL_tret[2]}.\sage{P_csvesinh}=\sage{P_vs1}W$
+\end{itemize}
+\item \textit{Nhà vệ sinh nam:}
+\begin{itemize}
+\item Số lượng phòng: $n = \sage{SL_tret[3]}$ phòng.
+\item Diện tích: $S = \sage{Tang_tret[3]}m^2$.
+\item Công suất chiếu sáng cho một phòng vệ sinh: với $P_0 = 15 - 20W/m^2$, chọn $P_0 = \sage{Pcs[1]}W/m^2$, suy ra công suất chiếu sáng: $P_{cs2}=P_0.S = \sage{Pcs[1]}.\sage{Tang_tret[3]}=\sage{P_csvesinh2}W$
+\item Công suất chiếu sáng cho nhà vệ sinh nam: $P_{vs2}=nP_{cs2}=\sage{SL_tret[3]}.\sage{P_csvesinh2}=\sage{P_vs2}W$
+\end{itemize}
+\item Công suất tính toán cho toàn nhà vệ sinh: $P_{vs} = P_{vs1} + P_{vs2} = \sage{P_vs1} + \sage{P_vs2} = \sage{P_vs}W$
+\end{itemize}
+\item \textit{Dãy hành lang:}
+\begin{itemize}
+\item Diện tích: $S = \sage{Tang_tret[4]}m^2$.
+\item Công suất chiếu sáng: Chọn $P_0 = \sage{Pcs[2]}W/m^2$, suy ra công suất chiếu sáng: $$P_{hl} = P_0.S = \sage{Pcs[2]}.\sage{Tang_tret[4]} = \sage{P_hlang}W$$
+\end{itemize}
+\item \textit{Cầu thang:}
+\begin{itemize}
+\item Số lượng: $n=\sage{CT_tret}$ cầu thang.
+\item Sử dụng loại đèn công suất $P=\sage{den_cthang}W$, cho mỗi cầu thang.
+\item Công suất chiếu sáng cho $\sage{CT_tret}$ cầu thang là: $P_{ct}=n.P = \sage{CT_tret}.\sage{den_cthang} = \sage{P_cthang}W$
+\end{itemize}
+\item \textit{Khu vực thang máy:}
+\begin{itemize}
+\item Số lượng: $n=\sage{TM_tret}$ khu.
+\item Sử dụng loại đèn công suất $P=\sage{den_cthang}W$, cho khu vực thang máy.
+\item Công suất chiếu sáng cho khu vực thang máy là: $P_{tm} = nP = \sage{TM_tret}.\sage{den_thangmay} = \sage{P_thangmay}W$
+\end{itemize}
+\item \textit{Công suất tính toán cho tầng trệt:}
+\begin{equation*}
+\begin{split}
+P_{{t_0}} & = P_{3p} + P_{py} + P_{vs} + P_{hl} + P_{ct} + P_{tm} \\
+& =  \sage{P_3ptret} + \sage{P_yte} + \sage{P_vs} + \sage{P_hlang} + \sage{P_cthang} + \sage{P_thangmay} = \sage{P_t0}W\\
+P_{{tt_0}} & = k_{dt}P_{{t_0}} = \sage{k_nc}\times\sage{P_t0} = \sage{P_tt0}W=\sage{P_tt0k}kW
+\end{split}
+\end{equation*}
+\end{itemize}
+%Phụ tải tầng 1:
+\item \textbf{Tầng 1 đến tầng 5:} Tầng 1 đến tầng 5, tính chất phụ tải giống nhau, nên chỉ xét một tầng. Chọn \emph{tầng 1} tính toán.
+\begin{itemize}
+\item \textit{Phụ tải tầng 1}: gồm $3$ phòng học; phòng nghỉ của giảng viên; nhà vệ sinh; cầu thang; khu vực thang máy; hành lang dài; hành lang phía sau cửa sổ.
+\begin{itemize}
+\item \textit{Phụ tải tính toán cho $3$ phòng học:} chọn phụ tải như $3$ phòng học ở tầng trêt, suy ra: $P_{3p} = \sage{P_3ptret}W$
+\item \textit{Phòng nghỉ của giảng viên:} chọn phụ tải như phòng y tế ở tầng trệt, nhưng công suất dự phòng ở phòng y tế là $\sage{P_dpyte}W$ giảm còn $\sage{P_dp1}W$, suy ra: $P_{py}=\sage{P_yte}-\sage{delta_P}=\sage{P_yte1}W$
+\item \textit{Nhà vệ sinh:} phụ tải như nhà vệ sinh ở tầng trệt, suy ra: $P_{vs} = \sage{P_vs}W$
+\item \textit{Cầu thang:} chọn phụ tải như ở tầng trệt, suy ra: $P_{ct} = \sage{P_cthang}W$
+\item \textit{Khu vực thang máy:} chọn phụ tải như khu vực thang máy ở tầng trệt, suy ra: $P_{tm} = \sage{P_thangmay}W$
+\item \textit{Hành lang dài:} chọn phụ tải như hành lang ở tầng trệt, suy ra: $P_{hl} = \sage{P_hlang}W$
+\item \textit{Hành lang phía sau cửa sổ:} 
+\begin{itemize}
+\item Diện tích: $S = \sage{Tang_1}m^2$.
+\item Chiếu sáng: chọn công suất chiếu sáng $P_0 = \sage{Pcs[2]}W/m^2$, suy ra, công suất chiếu sáng: $P_{hls} = P_0.S = \sage{Pcs[2]}.\sage{Tang_1}=\sage{P_hls}W$
+\end{itemize}
+\item \textit{Công suất tính toán cho \textit{tầng 1}:}
+\begin{equation*}
+\begin{split}
+P_{{t_1}} & = P_{3p} + P_{py} + P_{vs} + P_{hl} + P_{ct} + P_{tm} + P_{hls}\\
+& =  \sage{P_3ptret} + \sage{P_yte1} + \sage{P_vs} + \sage{P_hlang} + \sage{P_cthang} + \sage{P_thangmay} +\sage{P_hls}= \sage{P_t1}W\\
+P_{{tt_1}} & = k_{dt}P_{{t_1}} = \sage{k_nc}\times\sage{P_t1} = \sage{P_tt1}W=\sage{P_tt1k}kW
+\end{split}
+\end{equation*}
+\end{itemize}
+\item Phụ tải tính toán cho \textit{$5$ tầng} (từ tầng 1 đến tầng 5): $$P_{{tt_{1-5}}}=5P_{{tt_1}}=5 \times \sage{P_tt1k} = \sage{P_tt5tk}kW$$
+\end{itemize}
+\item \textbf{Phụ tải tầng 6:} gồm $1$ phòng chuyên đề; $1$ giảng đường; $1$ phòng nghỉ giảng viên; cầu thang; khu vực thang máy; nhà vệ sinh; hàng lang dài; hành lang sau cửa sổ.
+\begin{itemize}
+\item \textit{Phòng chuyên đề:}
+\begin{itemize}
+\item Diện tích: $S = \sage{Tang_6[0]}m^2$.
+\item \textit{Công suất chiếu sáng:} chọn $P_0 = \sage{Pcs[0]}W/m^2$, suy ra công suất chiếu sáng là: $P_{cs} = P_0.S = \sage{Pcs[0]}.\sage{Tang_6[0]} = \sage{P_cscd6}W$
+\item \textit{Làm mát:} sử dụng $n=\sage{P_quatcd[1]}$ quạt, loại công suất $P = \sage{P_quatcd[0]}W$, suy ra công suất làm mát: $P_{lm}=nP = \sage{P_quatcd[1]}.\sage{P_quatcd[0]} = \sage{P_lmcd6}W$
+\item \textit{Công suất dự phòng:} $P_{dp} = \sage{P_dpcd}W$
+\item Tổng công suất tính toán phòng chuyên đề:$$P_{{t_{cd}}} = P_{cs} + P_{lm} + P_{dp} = \sage{P_cscd6} + \sage{P_lmcd6} + \sage{P_dpcd}=\sage{P_tt_cd}W$$
+\end{itemize}
+\item \textit{Giảng đường:}
+\begin{itemize}
+\item Diện tích: $S = \sage{Tang_6[1]}m^2$.
+\item \textit{Công suất chiếu sáng:} chọn $P_0 = \sage{Pcs[0]}W/m^2$, suy ra công suất chiếu sáng là: $P_{cs} = P_0.S = \sage{Pcs[0]}.\sage{Tang_6[1]} = \sage{P_csgd6}W$
+\item \textit{Làm mát:} sử dụng $n=\sage{P_quatgd[1]}$ quạt, loại công suất $P = \sage{P_quatgd[0]}W$, suy ra công suất làm mát: $P_{lm}=nP = \sage{P_quatgd[1]}.\sage{P_quatgd[0]} = \sage{P_lmgd6}W$
+\item \textit{Một số thiết bị phục vụ giảng dạy}: chọn phụ tải như một phòng học ở tầng trệt, nhưng công suất suất dự phòng ở tầng trệt là $\sage{P_dp}W$ tăng lên $\sage{P_dpgd}W$, suy ra công suất của các thiết bị là: $P_{tb} = \sage{P_tb} + \sage{delta_P_gd} = \sage{P_tbgd6}W$
+\item Tổng công suất giảng đường là:$$P_{t_{dg}}=P_{cs}+P_{lm}+P_{tb} = \sage{P_csgd6} + \sage{P_lmgd6} + \sage{P_tbgd6} = \sage{P_tt_gd}W$$
+\end{itemize}
+\item \textit{Cầu thang:} chọn phụ tải giống như khu vực cầu thang ở tầng trệt, suy ra: $P_{ct}=\sage{P_cthang}W$
+\item \textit{Khu vực thang máy:} chọn phụ tải giống như khu vực thang máy ở tầng trệt, suy ra: $P_{tm}=\sage{P_thangmay}W$
+\item \textit{Nhà vệ sinh:} chọn phụ tải giống như chọn phụ tải nhà vệ sinh ở tầng trệt, suy ra: $P_{vs}=\sage{P_vs}W$
+\item \textit{Hành lang dài:} chọn phụ tải như hành lang ở tầng trệt, suy ra: $P_{hl} = \sage{P_hlang}W$
+\item \textit{Hành lang sau cửa sổ:} chọn phụ tải giống như chọn phụ tải ở hành lang cửa sổ tầng 1, suy ra: $P_{hls} = \sage{P_hls}W$
+\item Công suất tính toán cho \textit{tầng 1}:
+\begin{equation*}
+\begin{split}
+P_{{t_6}} & = P_{t_{cd}} + P_{t_{gd}} + P_{vs} + P_{hl} + P_{ct} + P_{tm} + P_{hls}\\
+& =  \sage{P_tt_cd} + \sage{P_tt_gd} + \sage{P_vs} + \sage{P_hlang} + \sage{P_cthang} + \sage{P_thangmay} +\sage{P_hls}= \sage{P_t6}W\\
+P_{{tt_6}} & = k_{dt}P_{{t_6}} = \sage{k_nc}\times\sage{P_t6} = \sage{P_tt6}W=\sage{P_tt6k}kW
+\end{split}
+\end{equation*}
+\end{itemize}
+\item \textbf{Sân thượng:} Chọn $1$ đèn, loại công suất $P=40W$, suy ra: $P_{st}=40W=0.04kW$
+\item \textbf{Hệ thống thang máy:}
+\begin{itemize}
+\item Khối lượng đối trọng: $m_{dt}=m_{bt}+\alpha m_{ngMax}$\\
+\begin{tabular}{ll}
+trong đó:& $m_{bt}$ -- khối lượng buồng thang.\\
+& $\alpha = 0.3 - 0.6$ -- hệ số cân bằng\\
+& $m_{ngMax}$ -- Khối lượng người tối đa mà thang máy trở được.
+\end{tabular}
+\item Số tầng di chuyển: $n = \sage{So_tang}$ tầng. Chọn $m_{dt}=1400kg$, suy ra: $P_{httm}=\sage{P_httm}kW$
+\end{itemize}
+\item \textbf{Công suất tính toán cho toàn công trình:}
+\begin{equation*}
+\begin{split}
+P_{{t}} & = P_{{tt}_{0}} + P_{{tt}_{1-5}} + P_{{tt}_{6}} + P_{st} + P_{httm}\\
+& = \sage{P_tt0k} + \sage{P_tt5tk} + \sage{P_tt6k} + 0.04 + \sage{P_httm}=\sage{Ptct}kW\\
+P_{tt} & = k_{dt}P_t = \sage{k_nc}\times\sage{Ptct} = \sage{Pttct}kW
+\end{split}
+\end{equation*}
+\item \textbf{Dự đoán phụ tải trong tương lai}: Công suất dự phòng: $P_{dptl}=\sage{P_dptl}kW$
+\item \textbf{Phụ tải tính toán:}
+\begin{itemize}
+\item \textit{Phụ tải tính toán:}  $P_{TT} = P_{tt}+P_{dptl} = \sage{Pttct}+\sage{P_dptl} = \sage{P_TT}kW$
+\item \textit{Hệ số công suất:} chủ yếu là phụ tải chiếu sáng, nên ta chọn: $\cos \varphi = \sage{PF} \Rightarrow \tan \varphi = \sage{tan_phi}$
+\item \textit{Công suất phản kháng tính toán:} $Q_{TT}=P_{TT}\tan \varphi = \sage{P_TT}\times \sage{tan_phi}=\sage{Q_TT}KVar$
+\item \textit{Công suất toàn phần tính toán:} $$S_{TT} = \frac{P_{TT}}{\cos \varphi}=\frac{\sage{P_TT}}{\sage{PF}}=\sage{S_TT}KVA$$
+\end{itemize}
+\end{enumerate}
