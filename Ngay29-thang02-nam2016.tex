@@ -1,0 +1,286 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{vietnam}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{multirow}
+\usepackage[left=2.5cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{sagetex}
+\begin{document}
+\begin{center}
+\begin{tabular}{l|l}
+\emph{\large{\today}} & \large{\emph{Danh sách nhóm}} \\
+\emph{\Large{Báo cáo đồ án cung cấp điện}}& 1 -- Thi Minh Nhựt \\
+\textbf{\large{Tuần 2}}& 2 -- Nguyễn Văn Quy \\
+& 3 -- Phạm Thanh Quý\\
+\end{tabular}
+\end{center}
+
+\section*{{\Huge Tính toán các số liệu thực tế}}
+\hspace{.6cm}Thực hiện quá trình tính toán cung cấp điện cho công trình \textbf{``Dãy phòng học một trệt sáu lầu''} của \emph{Trường Đại học Kỹ thuật -- Công nghệ Cần Thơ.}
+\section{Xác định phụ tải tính toán}
+\begin{sagesilent}
+#Tầng trệt: 3 phòng học; 1 phòng y tế; 1 nhà vệ sinh nữ; 1 nhà vệ sinh nam; dãy hành lang;
+# 2 cầu thang; khu vực thang máy - chọn 1 đèn
+
+Tang_tret = [12*8, round(6.7*3,0), round(2.3*4.3,0), round(3.6*6.5,0), round(48* 2.6,0)] #Diện tích mỗi phòng (theo thứ tự trên)
+
+SL_tret = [3,1,2,1,1] #Số lượng phòng  của từng loại trên
+
+CT_tret = 2 #Số lượng cầu thang
+
+TM_tret = 1
+
+#Các giá trị công suất tính toán chiếu sáng:
+
+Pcs = [20, 15,10] #Phòng thí nghiệm - phòng học - hành lang, W/m2
+P_quat = [75,4] # Công suât - số lượng
+#Một số thiết bị phục vụ giảng dạy:
+Tivi = [200,1]
+laptop = [65,10]
+P_dp = 1000
+den_cthang = 40
+den_thangmay = 40
+
+#Hệ số nhu cầu:
+k_nc = round(0.8,1)
+
+#Phòng học
+P_chieusang = Tang_tret[0]*Pcs[0]
+P_lammat = P_quat[0]*P_quat[1]
+P_tb = Tivi[0]*Tivi[1] + laptop[0]*laptop[1] + P_dp
+P_1ptret = P_chieusang + P_lammat + P_tb
+P_3ptret = SL_tret[0]*P_1ptret
+
+#Phòng y tế:
+P_quatyte = [75,1]
+P_dpyte = 2000
+P_csyte = Pcs[0]*Tang_tret[1]
+P_lammatyte = P_quatyte[0]*P_quatyte[1]
+P_yte = SL_tret[1]*(P_dpyte + P_csyte + P_lammatyte)
+
+#Phòng vệ sinh:
+#Nhà vệ sinh nữ:
+P_csvesinh = Pcs[1]*Tang_tret[2]
+P_vs1 = SL_tret[2]*P_csvesinh
+
+#Nhà vệ sinh nam:
+P_csvesinh2 = Pcs[1]*Tang_tret[3]
+P_vs2 = SL_tret[3]*P_csvesinh2
+
+P_vs = P_vs1 + P_vs2 #Công suất tính toán cho nhà vệ sinh
+
+#Dãy hành lang:
+P_hlang = Pcs[2]*Tang_tret[4]
+
+#Cầu thang:
+P_cthang = den_cthang*CT_tret
+
+#Thang máy:
+P_thangmay = den_thangmay*TM_tret
+
+#Công suất tính toán tầng trệt:
+P_t0 = P_3ptret + P_yte + P_vs + P_hlang + P_cthang + P_thangmay
+
+P_tt0 = round(k_nc*P_t0,0) #Công suất tính toán có hệ số nhu cầu
+P_tt0k = round(P_tt0/1000,3)
+
+#Phụ tải tầng 1:
+Tang_1 = round(1.7*43,0) #Diện tích của hành lang ngoài cửa sổ
+P_dp1 = 1000
+delta_P = P_dpyte - P_dp1
+#Phu tai moi
+P_yte1 = P_yte - delta_P
+P_hls = Tang_1*Pcs[2]
+
+#Công suất tính toán tầng trệt:
+P_t1 = P_3ptret + P_yte1 + P_vs + P_hlang + P_cthang + P_thangmay + P_hls
+
+P_tt1 = round(k_nc*P_t1,0) #Công suất tính toán có hệ số nhu cầu
+P_tt1k = round(P_tt1/1000,3)
+
+#Phu tải cho 5 tầng
+P_tt5tk = round(5*P_tt1k,3)
+
+#Phụ tải tầng 6:
+Tang_6 = [8*4, 8*32] #Phòng chuyên đề và giảng đường
+P_quatcd=[75,2]
+P_quatgd = [75,11]
+P_dpcd = 1000
+P_dpgd = 2000
+delta_P_gd = P_dpgd - P_dp
+
+P_cscd6 = Pcs[0]*Tang_6[0]
+P_csgd6 = Pcs[0]*Tang_6[1]
+P_lmcd6 = P_quatcd[0]*P_quatcd[1]
+P_lmgd6 = P_quatgd[0]*P_quatgd[1]
+P_tbgd6 = P_tb + delta_P_gd
+
+P_tt_cd = P_cscd6 + P_lmcd6 + P_dpcd
+P_tt_gd = P_csgd6 + P_lmgd6 + P_tbgd6
+
+#Công suất tính toán tầng 6:
+P_t6 = P_tt_cd + P_tt_gd + P_vs + P_hlang + P_cthang + P_thangmay + P_hls
+
+P_tt6 = round(k_nc*P_t6,0) #Công suất tính toán có hệ số nhu cầu
+P_tt6k = round(P_tt6/1000,3)
+
+#Hệ thống thang máy:
+So_tang = 6 #Số tầng di chuyển
+KL_DT = 1440 #Khối lượng đối trọng, kg.
+P_httm = 4 #Công suất hệ thống thang máy, kW
+
+#Tính cho toàn công trình:
+Ptct=P_tt0k + P_tt5tk + P_tt6k + 0.04 + P_httm
+Pttct = round(k_nc*Ptct,3)
+
+P_dptl = 20 #KW, dự phòng tương lai
+P_TT = Pttct + P_dptl
+
+#Hệ số công suất:
+PF = round(0.85,2) #cos = 0.85
+tan_phi = round(sqrt(1/PF^2-1),2)
+Q_TT = round(P_TT*tan_phi,2)
+S_TT = round(P_TT/PF,2)
+\end{sagesilent}
+\section{Chọn máy biến áp và máy phát điện dự phòng}
+\section*{Chọn máy biến áp}
+\begin{sagesilent}
+Upha = 220 #Điện áp pha là 220V
+I_tt = round(S_TT*(10**3)/(3*Upha),1) #Dòng điện tính toán, đơn vị là A.
+\end{sagesilent}
+\hspace{.6cm}Theo tính toán ở phần trên, ta có: $$S_{TT}=\sage{S_TT}KVA \Rightarrow I_{tt}=\frac{S_{TT}}{3U_p}=\frac{\sage{S_TT}}{3\times\sage{Upha}}=\sage{I_tt}A$$\\
+
+Để chọn được số lượng và dung lượng máy biến áp, ta tiến hành tính toán kinh tế, kỹ thuật cho nhiều phương án, sau đó chọn phương án tối ưu nhất.\\
+
+Chọn công suất máy biến áp phải thỏa điều kiện sau: $S_{MBA}\geq S_{tt}$. \\
+
+Với $S_{TT}=\sage{S_TT}KVA\Rightarrow S_{MBA} \geq \sage{S_TT}KVA$.\\
+
+Các thông số cần thiết cho việc tính toán và lựa chọn:
+\begin{itemize}
+\item Cấp điện áp: $22/0.4kV$.
+\item Công suất máy biến áp: $S_{MBA} \geq \sage{S_TT}KVA$ 
+\item Chọn máy biến áp do \emph{Thibidi} chế tạo, thông số của một số máy biến áp như sau (theo tiêu chuẩn ĐL3 -- QĐ1545)\footnote{http://www.thibidi.com/vn/2/16/product/2.html}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}\hline
+Công suất $kVA$ & Điện áp $kV$ & $\Delta P_0 , kW$ & $\Delta P_N, kW$ & $U_N,\%$ & $I_N,\%$\\ \hline
+$75$ & $22KV + 2 \times 2,5\% / 0,4 KV$ & $0.26$ & $1.4$ & $3.5\pm4.4$ & $2$\\ \hline
+$100;160;180$ & $22KV + 2 \times 2,5\% / 0,4 KV$ & $0.51$ & $2.35$ & $3.8\pm4.5$ & $2$\\ \hline
+\end{tabular}
+\end{center}
+\item Theo các số liệu trên, ta xét 2 phương án lựa chọn máy biến áp như sau:
+\begin{itemize}
+\item \emph{Phương án 1}: Chọn một máy biến áp ba pha  có công suất $S=160kVA$.
+\item \emph{Phương án 2}: Chọn hai máy biến áp ba pha, mỗi máy có công suất $S=75kVA$.
+\end{itemize}
+\end{itemize}
+\subsection{Phương án 1: Chọn một máy biến áp ba pha có công suất 160kVA}
+\begin{sagesilent}
+#Phương án 1: chọn máy biến áp S = 160kVA, đơn vị k
+S1 = 160; P0=round(.51,2); PN=round(2.35,2); UN = 4; IN=2
+kkt = round(0.05,2)
+QN = round(UN*S1/100,2)
+PN2 = round(PN+kkt*QN,2)
+Q0 = round(IN*S1/100,2)
+P02 = round(P0+kkt*QN,2)
+A1 = round(P02*8760+PN2*(S_TT/S1)**2*3411,0)
+\end{sagesilent}
+\hspace{.6cm}Tính các tổn thất công suất của máy biến áp:
+\begin{itemize}
+\item Tổn thất công suất lúc ngắn mạch: $$ \Delta Q_N = \frac{U_N\%.S_{MBA}}{100}=\frac{\sage{UN}\times\sage{S1}}{100} = \sage{QN}kVar$$
+\item Tổn thất công suất tác dụng lúc ngắn mạch ($k_{kt} = \sage{kkt} kW/kVA$ hệ số dung lượng kinh tế):$$ \Delta P_N^\prime = \Delta P_N + k_{kt}.\Delta Q_N = \sage{PN}+\sage{kkt}\times\sage{QN}=\sage{PN2}kW$$
+\item Tổn thất công suất phản kháng trong máy biến áp: $$ \Delta Q_0 = \frac{I_0\%.S_{MBA}}{100}=\frac{\sage{IN}\times\sage{S1}}{100} = \sage{Q0}kVar$$
+\item Tổn thất công suất không tải kể cả công suất phản kháng gây ra:$$ P_0^\prime = \Delta P_0 + k_{kt}.\Delta Q_N = \sage{P0}+\sage{kkt}\times\sage{QN}=\sage{P02}kW$$
+\item Tổn thất điện năng trong máy biến áp có dung lượng $\sage{S1}kVA$ trong một năm là: 
+\begin{itemize}
+\item Thời gian tổn thất công suất lớn nhất: $\tau = 3411h$
+\item Tổn thất điện năng trong một năm: $$\Delta A_1 = \Delta P_0^\prime .t + \Delta P_N^\prime \left({\frac{S_{TT}}{S_{MBA}}}\right)^2.\tau=\sage{P02} \times 8760+\sage{PN2} \times \left({\frac{\sage{S_TT}}{\sage{S1}}}\right)^2\times 3411=\sage{A1}kWh$$
+\end{itemize}
+\item Tổn thất điện năng trong phương án thứ nhất là: $\Delta A_{p.a1}=\sage{A1}kWh$
+\end{itemize}
+\subsection{Phương án 2: Chọn hai máy biến áp ba pha, mỗi máy có công suất 75kVA}
+\begin{sagesilent}
+#Phương án 1: chọn máy biến áp S = 160kVA, đơn vị k
+S2 = 75; P0=round(.26,2); PN=round(1.4,1); UN = 4; IN=2
+kkt = round(0.05,2)
+QN = round(UN*S2/100,2)
+PN2 = round(PN+kkt*QN,2)
+Q0 = round(IN*S2/100,2)
+P02 = round(P0+kkt*QN,2)
+A2 = round(P02*8760+PN2*(S_TT/S2)**2*3411,0)
+A3 = 2*A2
+\end{sagesilent}
+\hspace{.6cm}Tính các tổn thất công suất của máy biến áp, \emph{tính cho một máy biến áp}:
+\begin{itemize}
+\item Tổn thất công suất lúc ngắn mạch: $$ \Delta Q_N = \frac{U_N\%.S_{MBA}}{100}=\frac{\sage{UN}\times\sage{S2}}{100} = \sage{QN}kVar$$
+\item Tổn thất công suất tác dụng lúc ngắn mạch ($k_{kt} = \sage{kkt} kW/kVA$ hệ số dung lượng kinh tế):$$ \Delta P_N^\prime = \Delta P_N + k_{kt}.\Delta Q_N = \sage{PN}+\sage{kkt}\times\sage{QN}=\sage{PN2}kW$$
+\item Tổn thất công suất phản kháng trong máy biến áp: $$ \Delta Q_0 = \frac{I_0\%.S_{MBA}}{100}=\frac{\sage{IN}\times\sage{S2}}{100} = \sage{Q0}kVar$$
+\item Tổn thất công suất không tải kể cả công suất phản kháng gây ra:$$ P_0^\prime = \Delta P_0 + k_{kt}.\Delta Q_N = \sage{P0}+\sage{kkt}\times\sage{QN}=\sage{P02}kW$$
+\item Tổn thất điện năng trong máy biến áp có dung lượng $\sage{S2}kVA$ trong một năm là: 
+\begin{itemize}
+\item Thời gian tổn thất công suất lớn nhất: $\tau = 3411h$
+\item Tổn thất điện năng trong một năm của một máy biến áp 3 pha: $$\Delta A_1 = \Delta P_0^\prime .t + \Delta P_N^\prime \left({\frac{S_{TT}}{S_{MBA}}}\right)^2.\tau=\sage{P02} \times 8760+\sage{PN2} \times \left({\frac{\sage{S_TT}}{\sage{S2}}}\right)^2\times 3411=\sage{A1}kWh$$
+\end{itemize}
+\item Tổn thất điện năng của hai máy biến áp ba pha là: $$\Delta A = 2\Delta A_1 = 2\times \sage{A2} = \sage{A3} kWh$$
+\item Tổn thất điện năng trong phương án thứ hai là: $\Delta A_{p.a2}=\sage{A3}kWh$
+\end{itemize}
+\subsection*{So sánh hai phương án và đưa ra lựa chọn}
+\begin{center}
+\begin{tabular}{|p{4cm}|p{5cm}|p{5cm}|}\hline
+\multirow{2}{3cm}{} & \emph{Phương án 1} & \emph{Phương án 2}\\ \cline{2-3}
+& Một máy biến áp ba pha công suất $160kVA$ & Hai máy biến áp ba pha, công suất mỗi máy $75kVA$\\ \hline
+Tổn hao điện năng $kWh/$năm & $\Delta A = \sage{A1}$ & $\Delta A = \sage{A3}$ \\ \hline
+\textbf{Chọn phương án} & \multicolumn{2}{c|}{\emph{Phương án 1: sử dụng một máy biến áp ba pha công suất 160kVA }}\\ \hline
+\end{tabular}
+\end{center}
+
+Lựa chọn trên phù hợp với thực tế, công trình thiết kế là trường học thuộc phụ tải loại 3, nên chỉ cần một nguồn cấp, dùng 1 máy biến áp là được. Các hệ số tổn hao thấp và công suất biểu kiến còn dư tương đối phù hợp cho sự phát triển của công trình trong tương lai (phòng thực hành, phòng máy, nâng cấp phòng học,\ldots).
+\section*{Chọn máy phát điện dự phòng}
+\begin{sagesilent} 
+Tang_duphong = 1
+chia_den = 3
+P_mp0 = round(P_yte + P_vs + P_hlang/chia_den  + Tang_duphong*P_1ptret,2)
+P_mp1 = round(Tang_duphong*P_tt1+P_vs + P_hlang/chia_den,2)
+P_mp6 = round(Tang_duphong*P_tt1+P_vs + P_hlang/chia_den+P_tt_cd+P_tt_gd,2)
+P_ttmp = round(k_nc*(k_nc*P_mp0 + k_nc*5*P_mp1 + k_nc*P_t6),0)
+P_ttmp1 = round(P_ttmp/1000,0)
+cos_mp = round(0.4,1)
+S_ttmp1 = round(P_ttmp1/cos_mp,2) #KVA
+kat = round(1.1,1)
+S_MF = round(kat*S_ttmp1,0)#KVA
+\end{sagesilent} 
+\hspace{.6cm}Lựa chọn máy phát điện tùy thuộc vào tính chất của mạng điện cần cung cấp:
+\begin{itemize}
+\item Địa điểm hoạt động.
+\item Tổng công suất lắp đặt.
+\item Độ nhạy của các mạng điện đối với gián đoạn điện .
+\item Độ sẵn sang của mạng lưới phân phối.
+\end{itemize}
+
+Giả sử các phụ tải sau cần được cấp điện từ nguồn dự phòng khi ngừng cung cấp điện từ nguồn điện chính:
+\begin{center}
+\begin{tabular}{|l|l|l|c|}\hline
+\textbf{Tên tầng} & \textbf{Tên phòng} & \textbf{$P_{tt},W$} & Tổng công suất trên một tầng (W)\\ \hline
+\multirow{4}{2cm}{Tầng trệt} & Phòng y tế & $\sage{P_yte}$ & \multirow{4}{2cm}{$\sage{P_mp0}$}\\ \cline{2-3}
+& Phòng vệ sinh & $\sage{P_vs}$ & \\ \cline{2-3}
+& $\sage{Tang_duphong}$ phòng học & $\sage{Tang_duphong}\times \sage{P_1ptret}$ & \\ \cline{2-3}
+& Hành lang & $\sage{P_hlang}\div \sage{chia_den}$ & \\ \hline \hline
+\multirow{3}{2cm}{Tầng 1} & $\sage{Tang_duphong}$ phòng học & $\sage{P_tt1}$ & \multirow{3}{2cm}{$\sage{P_mp1}$}\\ \cline{2-3}
+& Nhà vệ sinh & $\sage{P_vs}$ &\\ \cline{2-3}
+& Hành lang & $\sage{P_hlang}\div \sage{chia_den}$ &\\ \hline\hline
+\multirow{3}{2cm}{Tầng 6} & Giảng đường & $\sage{P_tt_gd}$ & \multirow{3}{2cm}{$\sage{P_mp1}$}\\ \cline{2-3}
+& Phòng chuyên đề & $\sage{P_tt_cd}$ &\\ \cline{2-3}
+& Nhà vệ sinh & $\sage{P_vs}$ &\\ \cline{2-3}
+& Hành lang & $\sage{P_hlang}\div \sage{chia_den}$ &\\ \hline\hline
+\end{tabular}
+\end{center}
+
+Phụ tải tính toán cần sử dụng máy phát dự phòng là: $$P_{{tt}_{mp}} = \sage{k_nc}\times\left({\sage{k_nc}\times\sage{P_mp0} + 5\times\sage{k_nc}\times \sage{P_mp1} + \times\sage{P_t6}}\right) =\sage{P_ttmp}W =  \sage{P_ttmp1}kW$$\\
+
+Thiết bị tiêu thụ là đèn huỳnh quang và máy tính nên: $$\cos \varphi = \sage{cos_mp} \Rightarrow S_{{tt}_{mp}}=\frac{P_{{tt}_{mp}}}{\cos \varphi}=\frac{\sage{P_ttmp1}}{\sage{cos_mp}}=\sage{S_ttmp1}kVA$$\\
+
+Chọn máy phát mới $100\%$, ta tính hệ số an toàn $k_{at} = \sage{kat}$ vào: $$S_{MF}=k_{at}S_{{tt}_{mp}}=\sage{kat} \times\sage{S_ttmp1}=\sage{S_MF}kVA$$
+\end{document}
